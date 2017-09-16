@@ -3,7 +3,7 @@
  * Plugin Name: Alternative Meta Table Library
  * Description: Library to store data in alternative metadata tables.
  * Version:     1.0.0
- * Author:      WebDevStudios
+ * Author:      justin.foell@webdevstudios.com
  * Author URI:  https://webdevstudios.com
  * License:     GPLv2
  */
@@ -100,8 +100,8 @@ class Alt_Meta {
 	 * @return null|int|false    Null if normal execution should happen, the meta ID on success, false on failure.
 	 */
 	public function intercept_add_metadata( $check, $object_id, $meta_key, $meta_value, $unique = false ) {
-		if ( ( $key_wo_prefix = $this->get_unprefixed_key( $meta_key ) ) !== false ) {
-			return add_metadata( $this->meta_type, $object_id, $key_wo_prefix, $meta_value, $unique );
+		if ( $this->has_prefix_match( $meta_key ) ) {
+			return add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $unique );
 		}
 		return $check;
 	}
@@ -124,8 +124,8 @@ class Alt_Meta {
 	 * @return null|int|false    Null if normal execution should happen, the meta ID on success, false on failure.
 	 */
 	public function intercept_update_metadata( $check, $object_id, $meta_key, $meta_value, $prev_value = '' ) {
-		if ( ( $key_wo_prefix = $this->get_unprefixed_key( $meta_key ) ) !== false ) {
-			return update_metadata( $this->meta_type, $object_id, $key_wo_prefix, $meta_value, $prev_value );
+		if ( $this->has_prefix_match( $meta_key ) ) {
+			return update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $prev_value );
 		}
 		return $check;
 	}
@@ -152,8 +152,8 @@ class Alt_Meta {
 	 * @return null|bool         Null if normal execution should happen, true on successful delete, false on failure.
 	 */
 	public function intercept_delete_metadata( $check, $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
-		if ( ( $key_wo_prefix = $this->get_unprefixed_key( $meta_key ) ) !== false ) {
-			return delete_metadata( $this->meta_type, $object_id, $key_wo_prefix, $meta_value, $delete_all );
+		if ( $this->has_prefix_match( $meta_key ) ) {
+			return delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $delete_all );
 		}
 		return $check;
 	}
@@ -176,8 +176,8 @@ class Alt_Meta {
 	 * @return null|mixed       Null if normal execution should happen, otherwise single metadata value, or array of values.
 	 */
 	public function intercept_get_metadata( $check, $object_id, $meta_key = '', $single = false ) {
-		if ( ( $key_wo_prefix = $this->get_unprefixed_key( $meta_key ) ) !== false ) {
-			return get_metadata( $this->meta_type, $object_id, $key_wo_prefix, $meta_value, $delete_all );
+		if ( $this->has_prefix_match( $meta_key ) ) {
+			return get_metadata( $this->meta_type, $object_id, $meta_key, $single );
 		}
 		return $check;
 	}
@@ -217,9 +217,9 @@ class Alt_Meta {
 	 * @param string $meta_key Full meta key, may or may not be prefixed.
 	 * @return string|bool     The meta key without the prefix, false if this meta key is not prefixed.
 	 */
-	private function get_unprefixed_key( $meta_key ) {
-		if ( strpos( $meta_key, $this->meta_type . '_' ) === 0 ) {
-			return substr( $meta_key, strlen( $this->meta_type ) + 1 );
+	private function has_prefix_match( $meta_key ) {
+		if ( 0 === strpos( $meta_key, $this->meta_type . '_' ) ) {
+			return true;
 		}
 		return false;
 	}
